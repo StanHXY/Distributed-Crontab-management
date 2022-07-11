@@ -1,0 +1,10 @@
+{
+  "API interface service port" : "provide CRUD service on tasks",
+  "ApiPort": 8070,
+
+  "API interface read timeout": "millisecond",
+  "ApiReadTimeout": 5000,
+
+  "API interface write timeout": "millisecond",
+  "ApiWriteTimeout": 5000
+}
