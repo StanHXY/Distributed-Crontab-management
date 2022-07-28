@@ -1,4 +1,4 @@
-package master
+package worker
 
 import (
 	"encoding/json"
@@ -6,14 +6,12 @@ import (
 )
 
 type Config struct {
-	ApiPort               int      `json:"ApiPort"`
-	ApiReadTimeout        int      `json:"ApiReadTimeout"`
-	ApiWriteTimeout       int      `json:"ApiWriteTimeout"`
 	EtcdEndpoints         []string `json:"etcdEndpoints"`
 	EtcdDialTimeout       int      `json:"etcdDialTimeout"`
-	WebRoot               string   `json:"webroot"`
 	MongodbUri            string   `json:"mongodbUri"`
 	MongodbConnectTimeout int      `json:"mongodbConnectTimeout"`
+	JobLogBatchSize       int      `json:"jobLogBatchSize"`
+	JobLogCommitTimeout   int      `json:"jobLogCommitTimeout"`
 }
 
 var (

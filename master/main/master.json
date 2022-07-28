@@ -6,5 +6,20 @@
   "ApiReadTimeout": 5000,
 
   "API interface write timeout": "millisecond",
-  "ApiWriteTimeout": 5000
+  "ApiWriteTimeout": 5000,
+
+  "etcd cluster list": "Please config multiple cluster",
+  "etcdEndpoints": ["localhost:2379"],
+
+  "etcd dial timeout": "millisecond",
+  "etcdDialTimeout": 5000,
+
+  "web page root directory": "static page, Frontend and Backend separate development",
+  "webroot": "./webroot",
+
+  "mongoDB URL": "mongoDB URI",
+  "mongodbUri": "mongodb://localhost:27017",
+
+  "mongoDB Connect Timeout": "millisecond",
+  "mongodbConnectTimeout": 5000
 }

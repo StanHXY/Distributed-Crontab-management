@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
-	"test/src/github.com/Stan-HXY/distributed_crontab/master"
+	"test/src/github.com/Stan-HXY/distributed_crontab/worker"
 	"time"
 )
 
@@ -14,7 +14,9 @@ var (
 
 // decode command arguments
 func initArgs() {
-	flag.StringVar(&confFile, "config", "./master.json", "point the master.json")
+	// worker -config ./worker.json
+	// worker -h
+	flag.StringVar(&confFile, "config", "./worker.json", "worker.json")
 	flag.Parse()
 }
 
@@ -37,27 +39,32 @@ func main() {
 	initEnv()
 
 	// load config
-	if err = master.InitConfig(confFile); err != nil {
+	if err = worker.InitConfig(confFile); err != nil {
 		goto ERR
 	}
 
-	// launch worker management
-	if err = master.InitWorkerMgr(); err != nil {
+	// Service Registry
+	if err = worker.InitRegister(); err != nil {
 		goto ERR
 	}
 
-	// launch log management
-	if err = master.InitLogMgr(); err != nil {
+	// launch log save goroutine (mongoDB)
+	if err = worker.InitLogSink(); err != nil {
 		goto ERR
 	}
 
-	// Job management tool
-	if err = master.InitJobMgr(); err != nil {
+	// launch executor
+	if err = worker.InitExecutor(); err != nil {
 		goto ERR
 	}
 
-	// launch API HTTP service
-	if err = master.InitApiServer(); err != nil {
+	// launch scheduler
+	if err = worker.InitScheduler(); err != nil {
+		goto ERR
+	}
+
+	// launch job management
+	if err = worker.InitJobMgr(); err != nil {
 		goto ERR
 	}
 

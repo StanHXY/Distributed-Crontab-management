@@ -1,0 +1,20 @@
+{
+
+  "etcd cluster list": "Please config multiple cluster",
+  "etcdEndpoints": ["localhost:2379"],
+
+  "etcd dial timeout": "millisecond",
+  "etcdDialTimeout": 5000,
+
+  "mongoDB URL": "mongoDB URI",
+  "mongodbUri": "mongodb://localhost:27017",
+
+  "mongoDB Connect Timeout": "millisecond",
+  "mongodbConnectTimeout": 5000,
+
+  "Maximum Log Batch Capacity": "for reduce internet delay of mongoDB",
+  "jobLogBatchSize": 100,
+
+  "log auto commit when timeout": "timeout even batch hasn't reach threshold",
+  "jobLogCommitTimeout": 1000
+}

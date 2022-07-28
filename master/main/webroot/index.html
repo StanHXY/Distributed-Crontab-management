@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>crontab management</title>
+    <!-- bootstrap + jquery -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- page header -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h1>Distributed Crontab<small>  :: Management Dashboard </small> </h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- function buttons -->
+        <div class="row">
+            <div class="col-md-12">
+                <button type="button" class="btn btn-primary" id="new-job"> New Task </button>
+                <button type="button" class="btn btn-success" id="list-worker"> Workable Nodes </button>
+            </div>
+        </div>
+
+        <!-- task list -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-default" style="margin-top: 20px">
+              <div class="panel-body">
+                <table id="job-list" class="table table-striped">
+                  <thread>
+                    <tr>
+                      <th>Task Name</th>
+                      <th>Shell Command</th>
+                      <th>CronExpression</th>
+                      <th>Operation</th>
+                    </tr>
+                  </thread>
+                  <tbody>
+                    <!-- per task -->
+<!--                    <tr>-->
+<!--                      <td class="job-name">Task1</td>-->
+<!--                      <td class="job-command">echo hello</td>-->
+<!--                      <td class="job-cronExpr">* * * * *</td>-->
+<!--                      <td>-->
+<!--                        &lt;!&ndash; button group &ndash;&gt;-->
+<!--                        <div class="btn-toolbar">-->
+<!--                          <button class="btn btn-info edit-job">Edit</button>-->
+<!--                          <button class="btn btn-info-danger delete-job">Delete</button>-->
+<!--                          <button class="btn btn-info-warning kill-job">Terminate</button>-->
+<!--                        </div>-->
+<!--                      </td>-->
+<!--                    </tr>-->
+
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+
+    <!-- pop window -->
+    <div id="edit-modal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Edit Task</h4>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="edit-name">Task Name</label>
+                <input type="text" class="form-control" id="edit-name" placeholder="Name">
+              </div>
+              <div class="form-group">
+                <label for="edit-command">Shell Command</label>
+                <input type="text" class="form-control" id="edit-command" placeholder="Command">
+              </div>
+              <div class="form-group">
+                <label for="edit-cronExpr">Cron Expression</label>
+                <input type="text" class="form-control" id="edit-cronExpr" placeholder="Expression">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary btn-success" id="save-job">Save Changes</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!-- pop window : Log-->
+    <div id="log-modal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Task Log</h4>
+          </div>
+          <div class="modal-body">
+            <table id="log-list" class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Shell Command</th>
+                  <th>Error Message</th>
+                  <th>Script Output</th>
+                  <th>Planned Scheduled Time</th>
+                  <th>Actual Scheduled Time</th>
+                  <th>Execution Start Time</th>
+                  <th>Execution End Time</th>
+                </tr>
+              </thead>
+
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!-- pop window : workable nodes-->
+    <div id="worker-modal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Workable Nodes</h4>
+          </div>
+          <div class="modal-body">
+            <table id="worker-list" class="table table-striped">
+              <thead>
+              <tr>
+                <th>Node IP</th>
+              </tr>
+              </thead>
+
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <script>
+      // Page call function
+      $(document).ready(function(){
+        // 1. Bind function with button
+        // javascript Delegation
+
+        // Time formation function
+        function timeFormat(millsecond){
+          function paddingNum(num, n){
+            var len = num.toString().length
+            while(len < n){
+              num = '0' + num
+              len++
+            }
+            return num
+          }
+          var date = new Date(millsecond)
+          var year = date.getFullYear()
+          var month = paddingNum(date.getMonth() + 1, 2)
+          var day = paddingNum(date.getDate(), 2)
+          var hour = paddingNum(date.getHours(), 2)
+          var minute = paddingNum(date.getMinutes(), 2)
+          var second = paddingNum(date.getSeconds(), 2)
+          var millsecond = paddingNum(date.getMilliseconds(), 3)
+          return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second + "." + millsecond
+        }
+
+
+        $("#job-list").on("click", ".edit-job", function(event){
+          //get job info, assign to input of modal
+          $('#edit-name').val($(this).parents('tr').children('.job-name').text())
+          $('#edit-command').val($(this).parents('tr').children('.job-command').text())
+          $('#edit-cronExpr').val($(this).parents('tr').children('.job-cronExpr').text())
+
+          // Pop modal window
+          $('#edit-modal').modal('show')
+        })
+
+        // delete job
+        $("#job-list").on("click", ".delete-job", function(event){
+          var jobName = ($(this).parents("tr").children(".job-name").text())
+          $.ajax({
+            url:'/job/delete',
+            type:'post',
+            dataType:'json',
+            data:{name:jobName},
+            complete:function (){
+              window.location.reload()
+            }
+          })
+        })
+
+        // kill the task
+        $("#job-list").on("click", ".kill-job", function(event){
+          var jobName = ($(this).parents("tr").children(".job-name").text())
+          $.ajax({
+            url:'/job/kill',
+            type:'post',
+            dataType:'json',
+            data:{name:jobName},
+            complete:function (){
+              window.location.reload()
+            }
+          })
+        })
+
+        // save job
+        $('#save-job').on('click', function(){
+          var jobInfo = {name:$('#edit-name').val(), command:$('#edit-command').val(), cronExpr:$('#edit-cronExpr').val()}
+          $.ajax({
+            url:'/job/save',
+            type:'post',
+            dataType:'json',
+            data:{job:JSON.stringify(jobInfo)},
+            complete:function (){
+              window.location.reload()
+            }
+          })
+        })
+
+        // create new job
+        $('#new-job').on('click', function(){
+          $('#edit-name').val("")
+          $('#edit-command').val("")
+          $('#edit-cronExpr').val("")
+          $('#edit-modal').modal('show')
+        })
+
+        // Review job log
+        $("#job-list").on("click", ".log-job", function(event) {
+          // 清空日志列表
+          $('#log-list tbody').empty()
+
+          // 获取任务名
+          var jobName = $(this).parents('tr').children('.job-name').text()
+
+          // 请求/job/log接口
+          $.ajax({
+            url: "/job/log",
+            dataType: 'json',
+            data: {name: jobName},
+            success: function(resp) {
+              if (resp.errno != 0) {
+                return
+              }
+              // 遍历日志
+              var logList = resp.data
+              for (var i = 0; i < logList.length; ++i) {
+                var log = logList[i]
+                var tr = $('<tr>')
+                tr.append($('<td>').html(log.command))
+                tr.append($('<td>').html(log.err))
+                tr.append($('<td>').html(log.output))
+                tr.append($('<td>').html(timeFormat(log.planTime)))
+                tr.append($('<td>').html(timeFormat(log.scheduleTime)))
+                tr.append($('<td>').html(timeFormat(log.startTime)))
+                tr.append($('<td>').html(timeFormat(log.endTime)))
+                console.log(tr)
+                $('#log-list tbody').append(tr)
+              }
+            }
+          })
+
+          // 弹出模态框
+          $('#log-modal').modal('show')
+        })
+
+        // workable nodes button
+        $('#list-worker').on('click', function (){
+          $('#worker-list body').empty()
+
+          $.ajax({
+            url: '/worker/list',
+            dataType: 'json',
+            success: function(resp){
+              if (resp.errno != 0){
+                return
+              }
+
+              var workerList = resp.data
+              for(var i = 0; i < workerList.length; ++i){
+                var workIP = workerList[i]
+                var tr = $('<tr>')
+                tr.append($('<td>').html(workerIP))
+                $('#worker-list tbody').append(tr)
+              }
+            }
+          })
+
+          $('#worker-modal').modal('show')
+        })
+
+
+        // refresh job_list
+        function rebuildJobList(){
+          $.ajax({
+            url:'/job/list',
+            dataType:'json',
+            success:function(resp){
+              if(resp.errno != 0){
+                return
+              }
+              var jobList = resp.data
+              // clean the list
+              $('#job-list tbody').empty()
+
+              // fill the table
+              for(var i = 0; i < jobList.length; ++i){
+                var job = jobList[i];
+                var tr = $("<tr>")
+                tr.append($('<td class="job-name">').html(job.name))
+                tr.append($('<td class="job-command">').html(job.command))
+                tr.append($('<td class="job-cronExpr">').html(job.cronExpr))
+                var toolbar = $('<div class="btn-toolbar">')
+                        .append('<button class="btn btn-info edit-job">Edit</button>')
+                        .append('<button class="btn btn-danger delete-job">Delete</button>')
+                        .append('<button class="btn btn-warning kill-job">Terminate</button>')
+                        .append('<button class="btn btn-success log-job">Log</button>')
+                tr.append($('<td>').append(toolbar))
+                $("#job-list tbody").append(tr)
+              }
+            }
+          })
+        }
+        rebuildJobList()
+
+      })
+    </script>
+
+
+
+
+</body>
+</html>
