@@ -1,4 +1,5 @@
 # Distributed Crontab Management Studio
+![](/pic03.jpg)
 
 The project is developed by Golang with [etcd](https://etcd.io/) and MongoDB.
 
